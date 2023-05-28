@@ -1,10 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class BuyukAsteroitKod : MonoBehaviour
+public class BuyukAsteroitKod : MonoBehaviour,IKayitEdilebilir
 {
+    [Serializable]
+    class BuyukAsteroitVeri:OyunNesneVerisi
+    {
+        public int yasam;
+        public float hizCarpani;
+    }
     // Start is called before the first frame update
     [SerializeField] GameObject Asteroit;
     [SerializeField] TextMeshPro Yazi;
@@ -15,6 +22,7 @@ public class BuyukAsteroitKod : MonoBehaviour
     {
         GetComponent<Rigidbody2D>().velocity = Vector2.left * Hiz*hizCarpani;
         Yazi.text = yasam.ToString();
+        Kaydedici.KaydetmeListesineEkle(this);
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -37,7 +45,31 @@ public class BuyukAsteroitKod : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Asteroit.transform.Rotate(0.0f, 0.0f, 1.0f);
+        Asteroit.transform.Rotate(0.0f, 0.0f, 0.5f);
         
+    }
+    private void OnDestroy()
+    {
+        Kaydedici.KayitListesindenCikar(this);
+    }
+    public void KayittanOlustur(OyunNesneVerisi veri)
+    {
+        BuyukAsteroitVeri asteroidveri=(BuyukAsteroitVeri) veri;
+        transform.position = asteroidveri.Konum;
+        transform.rotation = asteroidveri.Yonlendirme;
+        yasam = asteroidveri.yasam;
+        hizCarpani = asteroidveri.hizCarpani;
+        Yazi.text = yasam.ToString();
+    }
+
+    public OyunNesneVerisi KayitGetir()
+    {
+        BuyukAsteroitVeri veri = new BuyukAsteroitVeri();
+        veri.Konum = transform.position;
+        veri.Yonlendirme = transform.rotation;
+        veri.yasam = yasam;
+        veri.hizCarpani = hizCarpani;
+        veri.SablonIsmi = "BuyukAsteroid";
+        return veri;
     }
 }

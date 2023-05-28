@@ -1,12 +1,22 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
+using static MermiKod;
 
-public class OyuncuKod : MonoBehaviour
+public class OyuncuKod : MonoBehaviour,IKayitEdilebilir
 {
+    [Serializable]
+    public class OyuncuVerisi : AnimasyonluNesneVerisi
+    {
+        public int Yasam;
+        
+    }
     // Start is called before the first frame update
     Vector3 hizVectoru;
-    Yon yon;
+    Yon yon; 
     public float hizCarpani;
     Transform kareTransform;
     public GameObject mermiSablon;
@@ -31,6 +41,11 @@ public class OyuncuKod : MonoBehaviour
     Animator animator;
     List<GameObject> mermiler;
     int yasam = 5;
+    private void Awake()
+    {
+
+        animator = GetComponent<Animator>();
+    }
     void Start()
     {
         var cameraObj = GameObject.Find("Main Camera");
@@ -47,9 +62,13 @@ public class OyuncuKod : MonoBehaviour
         hizCarpani = 2.0f;
         kareTransform = GameObject.Find("MermiCikisNoktasi").transform;
         mermiler = new List<GameObject>();
-        animator = GetComponent<Animator>();
+        
 
         rb = GetComponent<Rigidbody2D>();
+
+        Kaydedici.KaydetmeListesineEkle(this);
+
+
     }
     public List<GameObject> Mermiler
     {
@@ -128,16 +147,47 @@ public class OyuncuKod : MonoBehaviour
     {
         
     }
+
     void Update()
     {
-        
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            var s = PrefabUtility.GetCorrespondingObjectFromOriginalSource(gameObject);
+            
+        }
         girisKontrol();
         atesKontrol();
         //mermiKonumKontrol();
         konumGuncelle();
 
+       
+        
+        
 
+    }
 
+    public void KayittanOlustur(OyunNesneVerisi veri)
+    {
+        OyuncuVerisi oyuncuveri = (OyuncuVerisi)veri;
 
+        transform.position = oyuncuveri.Konum;
+        transform.rotation = oyuncuveri.Yonlendirme;
+        yasam = oyuncuveri.Yasam;
+        animator.Play(oyuncuveri.AnimasyonKodu,0,oyuncuveri.AnimasyonZamani);
+       
+    }
+
+    public OyunNesneVerisi KayitGetir()
+    {
+        OyuncuVerisi veri= new OyuncuVerisi();
+        veri.Konum = transform.position;
+        veri.Yonlendirme = transform.rotation;
+        veri.Yasam = yasam;
+        veri.SablonIsmi = "Oyuncu";
+        veri.AnimasyonKodu = animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
+        veri.AnimasyonZamani = animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
+
+        return veri;
     }
 }
